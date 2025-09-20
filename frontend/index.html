@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Support System</title>
+</head>
+<body>
+    <h1>Submit a New Ticket</h1>
+    <form id="ticketForm">
+        <label for="subject">Subject:</label><br>
+        <input type="text" id="subject" name="subject" required><br><br>
+        
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" required></textarea><br><br>
+        
+        <label for="priority">Priority:</label><br>
+        <select id="priority" name="priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select><br><br>
+
+        <button type="submit">Submit Ticket</button>
+    </form>
+
+    <hr>
+
+    <h2>My Tickets</h2>
+    <div id="ticketsList">
+        </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
