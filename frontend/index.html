@@ -4,32 +4,511 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Support System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            scroll-behavior: smooth;
+        }
+        .container {
+            background-color: #1e293b;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .input-field {
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
+        .ticket-item {
+            background-color: #334155;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .message-box {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .home-section {
+            padding: 4rem 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        /* --- Service Card Styles --- */
+        .service-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .service-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            border-color: #6366f1;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.8), 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        /* New styles for AI suggestions box */
+        #aiResponseContainer {
+            background-color: #ffffff;
+            color: #1a202c;
+        }
+        #aiResponseText ol {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #aiResponseText li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 8px;
+        }
+        #aiResponseText li::before {
+            content: '•';
+            color: #6366f1;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
 </head>
-<body>
-    <h1>Submit a New Ticket</h1>
-    <form id="ticketForm">
-        <label for="subject">Subject:</label><br>
-        <input type="text" id="subject" name="subject" required><br><br>
-        
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" required></textarea><br><br>
-        
-        <label for="priority">Priority:</label><br>
-        <select id="priority" name="priority">
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-        </select><br><br>
+<body class="min-h-screen flex flex-col items-center p-6">
 
-        <button type="submit">Submit Ticket</button>
-    </form>
+    <!-- Loading Indicator -->
+    <div id="loading-spinner" class="loading-overlay hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div>
+    </div>
 
-    <hr>
+    <!-- Message Box -->
+    <div id="message-box" class="message-box w-full max-w-sm"></div>
 
-    <h2>My Tickets</h2>
-    <div id="ticketsList">
+    <!-- Header / Navbar -->
+    <header id="main-header" class="w-full bg-slate-800 p-4 rounded-md flex justify-between items-center hidden">
+        <div class="flex items-center space-x-2">
+            <svg class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h1 class="text-xl font-bold text-white">IT SUPPORT HUB</h1>
         </div>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="#about-us" class="text-slate-300 hover:text-white transition-colors">ABOUT US</a></li>
+                <li><a href="#services" class="text-slate-300 hover:text-white transition-colors">SERVICES</a></li>
+                <li><a href="#contact" class="text-slate-300 hover:text-white transition-colors">CONTACT</a></li>
+                <li><button id="nav-auth-btn" class="px-3 py-1 bg-indigo-500 text-white font-bold rounded-md hover:bg-indigo-600 transition-colors">LOGIN</button></li>
+            </ul>
+        </nav>
+    </header>
 
-    <script src="app.js"></script>
+    <!-- Landing Page View -->
+    <div id="landing-view" class="w-full max-w-4xl mx-auto p-6 text-center pt-24">
+        <!-- Main Hero Section -->
+        <section class="home-section" id="hero-section">
+            <h1 class="text-5xl font-extrabold text-white mb-4">Seamless Support for Your Business</h1>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+                Our professional IT support platform routes all inquiries into a simple, multi-user web-based system. We help you stay on top of your support needs and keep your customers happy.
+            </p>
+            <button id="getStartedBtn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-md hover:bg-indigo-600 transition-colors">
+                Get Started
+            </button>
+        </section>
+        
+        <!-- About Us Section -->
+        <section class="home-section text-left" id="about-us">
+            <h2 class="text-4xl font-bold text-white mb-4 text-center">About Us</h2>
+            <p class="text-slate-300 mb-4">
+                We are a team of dedicated IT professionals committed to providing top-tier support solutions. Our mission is to simplify the support process for businesses of all sizes, ensuring that technical issues are resolved efficiently and effectively. We believe that great support is the backbone of any successful operation, and we're here to help you build that foundation.
+            </p>
+            <p class="text-slate-300">
+                Our platform is designed with both the end-user and the support team in mind. It provides a clean, intuitive interface for submitting tickets while offering powerful, real-time management tools for administrators.
+            </p>
+        </section>
+
+        <!-- Services Section -->
+        <section class="home-section text-left" id="services">
+            <h2 class="text-4xl font-bold text-white mb-4 text-center">Our Services</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="container service-card p-6 rounded-lg text-center">
+                    <i class="fas fa-ticket-alt text-4xl text-indigo-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-white">Ticket Management</h3>
+                    <p class="text-slate-400 text-sm">Create, track, and manage all your support requests in one centralized location.</p>
+                </div>
+                <div class="container service-card p-6 rounded-lg text-center">
+                    <i class="fas fa-headset text-4xl text-indigo-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-white">24/7 Support</h3>
+                    <p class="text-slate-400 text-sm">Our team is available around the clock to assist you with any issues.</p>
+                </div>
+                <div class="container service-card p-6 rounded-lg text-center">
+                    <i class="fas fa-chart-line text-4xl text-indigo-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2 text-white">Performance Analytics</h3>
+                    <p class="text-slate-400 text-sm">Gain insights into your support performance with detailed reports and analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Us Section -->
+        <section class="home-section text-left" id="contact">
+            <h2 class="text-4xl font-bold text-white mb-4 text-center">Contact Us</h2>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-1/2">
+                    <p class="text-slate-300 mb-4"><i class="fas fa-envelope mr-2"></i>Email: lamania295@mail.com</p>
+                    <p class="text-slate-300 mb-4"><i class="fas fa-phone mr-2"></i>Phone: +91 9611188835</p>
+                    <p class="text-slate-300"><i class="fas fa-map-marker-alt mr-2"></i>Address: 6 Udupi, Tech City, 576101</p>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <p class="text-slate-300">For any inquiries or to learn more about our services, please don't hesitate to reach out. We're always here to help.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Login/Register View -->
+    <div id="auth-view" class="w-full max-w-md mx-auto p-8 rounded-lg container hidden">
+        <h1 id="authTitle" class="text-3xl font-bold text-center mb-6 text-white">Login</h1>
+        <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-slate-400 mb-1">Email</label>
+            <input type="email" id="email" class="w-full px-4 py-2 rounded-md input-field" placeholder="john.doe@example.com">
+        </div>
+        <div class="mb-6">
+            <label for="password" class="block text-sm font-medium text-slate-400 mb-1">Password</label>
+            <input type="password" id="password" class="w-full px-4 py-2 rounded-md input-field" placeholder="••••••••">
+        </div>
+        <button id="authBtn" class="w-full px-4 py-2 bg-indigo-500 text-white font-bold rounded-md hover:bg-indigo-600 transition-colors">
+            Login
+        </button>
+        <p class="text-center text-sm text-slate-400 mt-4">
+            <span id="authToggleText">Don't have an account?</span> 
+            <button id="authToggleBtn" class="text-indigo-400 hover:underline transition-colors focus:outline-none">Register here.</button>
+        </p>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="w-full max-w-4xl mx-auto p-6 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 p-4 rounded-lg container">
+            <h1 class="text-3xl font-bold text-white mb-2 md:mb-0">IT SUPPORT SYSTEM</h1>
+            <div class="flex items-center gap-4">
+                <button id="homeBtn" class="px-4 py-2 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 transition-colors">HOME</button>
+                <p class="text-lg text-slate-400">Welcome, <span id="userEmail" class="font-semibold text-white"></span>!</p>
+                <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white font-bold rounded-md hover:bg-red-600 transition-colors">LOGOUT</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-6 rounded-lg container">
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">Submit a New Ticket</h2>
+                <form id="ticketForm" class="flex flex-col gap-4">
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-slate-400 mb-1">Subject</label>
+                        <input type="text" id="subject" required class="w-full px-4 py-2 rounded-md input-field">
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-slate-400 mb-1">Description</label>
+                        <textarea id="description" rows="4" required class="w-full px-4 py-2 rounded-md input-field"></textarea>
+                    </div>
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-slate-400 mb-1">Priority</label>
+                        <select id="priority" required class="w-full px-4 py-2 rounded-md input-field">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-indigo-500 text-white font-bold rounded-md hover:bg-indigo-600 transition-colors">
+                        Submit Ticket
+                    </button>
+                </form>
+                
+                <!-- AI Response Section -->
+                <div id="aiResponseContainer" class="hidden mt-6 p-6 rounded-lg border border-indigo-500">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">AI Suggestions:</h3>
+                    <div id="aiResponseText" class="text-slate-600"></div>
+                </div>
+            </div>
+
+            <div class="p-6 rounded-lg container">
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">Your Tickets</h2>
+                <div id="ticketsList" class="flex flex-col gap-4">
+                    <!-- Tickets will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const landingView = document.getElementById('landing-view');
+        const authView = document.getElementById('auth-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        const authTitle = document.getElementById('authTitle');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const authBtn = document.getElementById('authBtn');
+        const authToggleBtn = document.getElementById('authToggleBtn');
+        const authToggleText = document.getElementById('authToggleText');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const userEmailSpan = document.getElementById('userEmail');
+        const ticketForm = document.getElementById('ticketForm');
+        const ticketsList = document.getElementById('ticketsList');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const messageBox = document.getElementById('message-box');
+        const mainHeader = document.getElementById('main-header');
+        const navAuthBtn = document.getElementById('nav-auth-btn');
+        const aiResponseContainer = document.getElementById('aiResponseContainer');
+        const aiResponseText = document.getElementById('aiResponseText');
+
+        let isRegistering = false;
+
+        function showMessage(message, type = 'error') {
+            const messageElement = document.createElement('div');
+            messageElement.className = `p-4 rounded-lg shadow-lg mb-2 text-sm ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
+            messageElement.textContent = message;
+            messageBox.appendChild(messageElement);
+            setTimeout(() => {
+                messageElement.remove();
+            }, 5000);
+        }
+
+        function showView(view) {
+            landingView.classList.add('hidden');
+            authView.classList.add('hidden');
+            dashboardView.classList.add('hidden');
+            mainHeader.classList.add('hidden');
+            
+            if (view === dashboardView) {
+                dashboardView.classList.remove('hidden');
+            } else if (view === authView) {
+                authView.classList.remove('hidden');
+            } else {
+                landingView.classList.remove('hidden');
+                mainHeader.classList.remove('hidden');
+            }
+        }
+
+        function updateNavForAuth(isLoggedIn) {
+            if (isLoggedIn) {
+                navAuthBtn.textContent = 'DASHBOARD';
+                navAuthBtn.onclick = () => showView(dashboardView);
+            } else {
+                navAuthBtn.textContent = 'LOGIN';
+                navAuthBtn.onclick = () => showView(authView);
+            }
+        }
+
+        function checkAuth() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                userEmailSpan.textContent = currentUser.email;
+                renderTickets(currentUser.email);
+                showView(landingView);
+                updateNavForAuth(true);
+            } else {
+                showView(landingView);
+                updateNavForAuth(false);
+            }
+        }
+
+        function renderTickets(email) {
+            ticketsList.innerHTML = '';
+            const allTickets = JSON.parse(localStorage.getItem('tickets')) || [];
+            const userTickets = allTickets.filter(ticket => ticket.userEmail === email);
+            
+            if (userTickets.length === 0) {
+                ticketsList.innerHTML = '<p class="text-center text-slate-500">You have no tickets submitted.</p>';
+                return;
+            }
+
+            userTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            userTickets.forEach(ticket => {
+                const ticketItem = document.createElement('div');
+                ticketItem.className = 'ticket-item flex flex-col gap-2 p-4 rounded-lg bg-slate-700';
+                ticketItem.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-white">${ticket.subject}</h3>
+                        <span class="px-2 py-1 text-xs font-bold rounded-full ${
+                            ticket.priority === 'High' ? 'bg-red-500' :
+                            ticket.priority === 'Medium' ? 'bg-yellow-500' :
+                            'bg-green-500'
+                        }">${ticket.priority}</span>
+                    </div>
+                    <p class="text-sm text-slate-400">${ticket.description}</p>
+                    <p class="text-xs text-slate-500">Submitted: ${new Date(ticket.createdAt).toLocaleString()}</p>
+                `;
+                ticketsList.appendChild(ticketItem);
+            });
+        }
+
+        getStartedBtn.addEventListener('click', () => {
+            showView(authView);
+            isRegistering = false;
+            authTitle.textContent = 'Login';
+            authBtn.textContent = 'Login';
+            authToggleText.textContent = "Don't have an account?";
+            authToggleBtn.textContent = "Register here.";
+        });
+
+        navAuthBtn.addEventListener('click', () => {
+             // This is handled by the updateNavForAuth function now
+        });
+
+        homeBtn.addEventListener('click', () => {
+            showView(landingView);
+        });
+
+        authToggleBtn.addEventListener('click', () => {
+            isRegistering = !isRegistering;
+            authTitle.textContent = isRegistering ? 'Register' : 'Login';
+            authBtn.textContent = isRegistering ? 'Register' : 'Login';
+            authToggleText.textContent = isRegistering ? "Already have an account?" : "Don't have an account?";
+            authToggleBtn.textContent = isRegistering ? "Login here." : "Register here.";
+        });
+
+        authBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if (!email || !password) {
+                showMessage("Please enter both email and password.", "error");
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            if (isRegistering) {
+                const userExists = users.some(user => user.email === email);
+                if (userExists) {
+                    showMessage("User with this email already exists.", "error");
+                } else {
+                    const newUser = { email, password };
+                    users.push(newUser);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    localStorage.setItem('currentUser', JSON.stringify(newUser));
+                    showMessage("Registration successful! Redirecting...", "success");
+                    setTimeout(() => {
+                        checkAuth();
+                    }, 1000);
+                }
+            } else {
+                const user = users.find(user => user.email === email && user.password === password);
+                if (user) {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    showMessage("Login successful! Redirecting...", "success");
+                    setTimeout(() => {
+                        checkAuth();
+                    }, 1000);
+                } else {
+                    showMessage("Invalid email or password.", "error");
+                }
+            }
+        });
+
+        // Rule-based troubleshooting function
+        async function getAITroubleshooting(subject, description) {
+            return new Promise(resolve => {
+                setTimeout(() => { // Simulate a network delay
+                    let suggestions = [
+                        "We are unable to provide AI suggestions at this time. Please proceed with submitting your ticket."
+                    ];
+                    
+                    const lowerSubject = subject.toLowerCase();
+                    const lowerDescription = description.toLowerCase();
+
+                    if (lowerSubject.includes('black screen') || lowerDescription.includes('black screen')) {
+                        suggestions = [
+                            "Restart your computer.",
+                            "Check all cable connections (monitor, power).",
+                            "Boot into Safe Mode to check for driver issues.",
+                            "If on a laptop, try pressing a function key like F7 or F8 to toggle the display.",
+                            "Check for overheating."
+                        ];
+                    } else if (lowerSubject.includes('wifi') || lowerDescription.includes('internet') || lowerDescription.includes('network')) {
+                        suggestions = [
+                            "Restart your router and modem.",
+                            "Check if other devices can connect to the Wi-Fi.",
+                            "Forget and reconnect to the Wi-Fi network on your device.",
+                            "Run the network troubleshooter on your computer."
+                        ];
+                    } else if (lowerSubject.includes('slow') || lowerDescription.includes('lagging') || lowerDescription.includes('unresponsive')) {
+                        suggestions = [
+                            "Close unnecessary applications running in the background.",
+                            "Restart your computer to clear temporary files.",
+                            "Check your hard drive's available space.",
+                            "Run a virus and malware scan."
+                        ];
+                    } else if (lowerSubject.includes('login') || lowerDescription.includes('password')) {
+                        suggestions = [
+                            "Double-check your username and password for typos.",
+                            "Ensure the Caps Lock key is not enabled.",
+                            "Try the 'Forgot Password' or 'Reset Password' option if available.",
+                            "Clear your browser's cache and cookies."
+                        ];
+                    }
+
+                    resolve(suggestions);
+                }, 1000);
+            });
+        }
+
+        ticketForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                showMessage("You must be logged in to submit a ticket.", "error");
+                return;
+            }
+
+            const subject = document.getElementById('subject').value;
+            const description = document.getElementById('description').value;
+            const priority = document.getElementById('priority').value;
+
+            loadingSpinner.classList.remove('hidden');
+            const aiSuggestions = await getAITroubleshooting(subject, description);
+            loadingSpinner.classList.add('hidden');
+
+            aiResponseText.innerHTML = `<ol>${aiSuggestions.map(s => `<li>${s}</li>`).join('')}</ol>`;
+            aiResponseContainer.classList.remove('hidden');
+            
+            const allTickets = JSON.parse(localStorage.getItem('tickets')) || [];
+            const newTicket = {
+                userEmail: currentUser.email,
+                subject,
+                description,
+                priority,
+                createdAt: Date.now(),
+                status: 'Open'
+            };
+            allTickets.push(newTicket);
+            localStorage.setItem('tickets', JSON.stringify(allTickets));
+
+            showMessage("Ticket submitted successfully!", "success");
+            ticketForm.reset();
+            renderTickets(currentUser.email);
+        });
+
+        // Initial check to determine which view to show
+        checkAuth();
+    </script>
 </body>
 </html>

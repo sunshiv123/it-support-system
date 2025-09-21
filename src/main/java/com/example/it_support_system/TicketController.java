@@ -1,9 +1,11 @@
 package com.example.it_support_system;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -23,13 +25,34 @@ public class TicketController {
 
     // Endpoint to create a new ticket
     @PostMapping
-    public Ticket createTicket(@RequestBody Ticket ticket) {
-        // You would typically handle user authentication here to get the real user
-        // For this basic example, we'll assign it to a default user (e.g., ID 1)
-        User user = userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
-        ticket.setUser(user);
-        ticket.setStatus("Open"); // Default status for a new ticket
-        ticket.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-        return ticketRepository.save(ticket);
+    public ResponseEntity<Ticket> createTicket(@RequestBody Ticket ticket) {
+        // Find the user by their ID
+        Integer userId = ticket.getUser().getId();
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            ticket.setUser(user);
+            ticket.setStatus("Open"); // Default status for a new ticket
+            Ticket savedTicket = ticketRepository.save(ticket);
+            return new ResponseEntity<>(savedTicket, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Endpoint to update a ticket's status
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Ticket> updateTicketStatus(@PathVariable Integer id, @RequestBody String status) {
+        Optional<Ticket> ticketOptional = ticketRepository.findById(id);
+
+        if (ticketOptional.isPresent()) {
+            Ticket ticket = ticketOptional.get();
+            ticket.setStatus(status);
+            Ticket updatedTicket = ticketRepository.save(ticket);
+            return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

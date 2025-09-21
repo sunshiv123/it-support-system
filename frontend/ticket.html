@@ -1,0 +1,24 @@
+<!-- frontend/ticket.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Ticket</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Submit a Ticket</h2>
+  <form id="ticketForm">
+    <input type="text" placeholder="Issue Title" required>
+    <textarea placeholder="Describe your issue" required></textarea>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById('ticketForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Ticket submitted!'); // Placeholder action
+    });
+  </script>
+</body>
+</html>

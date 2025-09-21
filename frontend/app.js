@@ -5,6 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Base URL of our backend API
     const API_URL = 'http://localhost:8081/api/tickets';
 
+    // Get the current logged-in user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+    // If no user is logged in, redirect to the login page
+    if (!currentUser) {
+        window.location.href = 'dashboard.html';
+        return;
+    }
+
     // Function to fetch and display tickets
     const fetchTickets = async () => {
         try {
@@ -41,13 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle form submission
     ticketForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Prevent the default form submission
+        e.preventDefault();
         
         const subject = document.getElementById('subject').value;
         const description = document.getElementById('description').value;
         const priority = document.getElementById('priority').value;
 
-        const newTicket = { subject, description, priority };
+        const newTicket = { 
+            subject, 
+            description, 
+            priority,
+            user: { id: currentUser.id } // Now uses the ID of the logged-in user
+        };
         
         try {
             const response = await fetch(API_URL, {
@@ -60,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (response.ok) {
                 alert('Ticket submitted successfully!');
-                ticketForm.reset(); // Clear the form
-                fetchTickets(); // Refresh the list of tickets
+                ticketForm.reset();
+                fetchTickets();
             } else {
                 alert('Failed to submit ticket.');
             }
@@ -71,6 +85,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Fetch tickets when the page loads
     fetchTickets();
 });
